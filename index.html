@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tysha Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #b589d6, #800080, #49225b);
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .player-section, .upload-section {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .player-section {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .now-playing {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .thumbnail {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin: 0 auto 15px;
+            display: block;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .song-info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .song-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #b200ed;
+        }
+        
+        .song-artist {
+            color: #b200ed;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .song-duration {
+            color: #bbb;
+            font-size: 0.95rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-btn {
+            background: #b200ed;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-btn:hover {
+            background: #b200ed;
+            transform: scale(1.1);
+        }
+        
+        .play-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 1.8rem;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #b200ed, #b200ed);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .playlist {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .playlist::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .playlist::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .playlist::-webkit-scrollbar-thumb {
+            background: #b200ed;
+            border-radius: 10px;
+        }
+        
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .playlist-item:hover {
+            background: rgba(253, 187, 45, 0.2);
+        }
+        
+        .playlist-item.active {
+            background: rgba(253, 187, 45, 0.3);
+            border-left: 4px solid #b200ed;
+        }
+        
+        .playlist-thumb {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .playlist-info {
+            flex: 1;
+        }
+        
+        .playlist-title {
+            font-weight: bold;
+            color: #b200ed;
+        }
+        
+        .playlist-artist {
+            font-size: 0.8rem;
+            color: #b200ed;
+        }
+        
+        .playlist-duration {
+            font-size: 0.8rem;
+            color: #b200ed;
+            margin-left: 10px;
+        }
+        
+        .upload-section h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #b200ed;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #b200ed;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(253, 187, 45, 0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #b200ed;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #ff4d4d;
+        }
+        
+        .error {
+            color: #ff4d4d;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, #b589d6, #49225b);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .custom-add-section {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            grid-column: 1 / -1;
+        }
+        
+        .custom-add-section h2 {
+            margin-bottom: 15px;
+            color: #b200ed;
+            text-align: center;
+        }
+        
+        .code-example {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow-x: auto;
+            border: 1px solid rgba(253, 187, 45, 0.2);
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #b200ed;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .volume-slider {
+            width: 120px;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #b200ed;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(143, 0, 255, 1);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .file-garden-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .time-input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .time-input {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .time-separator {
+            display: flex;
+            align-items: center;
+            color: #b200ed;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-message" id="success-message">
+        <i class="fas fa-check-circle"></i> Lagu berhasil diupload!
+    </div>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-music"></i> Music Player <i class="fas fa-music"></i></h1>
+            <p>Website Ini Dibuat Untuk Pacar Sang Pembuat Yaitu (Tysha 🌹), Selamat Menikmati Lagunya Sayang... 🤭</p>
+        </header>
+        
+        <section class="player-section">
+            <div class="now-playing">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3c27d7e7-4206-43db-bc7a-b2161cc10525.png" alt="Album cover showing a modern music player interface with a circular album artwork" class="thumbnail" id="thumbnail">
+                <div class="song-info">
+                    <div class="song-title" id="song-title">Pilih lagu dari playlist</div>
+                    <div class="song-artist" id="song-artist">-</div>
+                    <div class="song-duration" id="song-duration">-</div>
+                </div>
+            </div>
+            
+            <div class="progress-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="time-display">
+                <span id="current-time">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="prev" title="Previous"><i class="fas fa-step-backward"></i></button>
+                <button class="control-btn play-btn" id="play" title="Play/Pause"><i class="fas fa-play" id="play-icon"></i></button>
+                <button class="control-btn" id="next" title="Next"><i class="fas fa-step-forward"></i></button>
+            </div>
+            
+            <div class="volume-control">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.01" value="0.5">
+                <i class="fas fa-volume-up"></i>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px; color: #b200ed;">Playlist DJ</h3>
+            <div class="playlist" id="playlist">
+                <!-- Playlist items will be added here dynamically -->
+            </div>
+        </section>
+
+    <script>
+        // Elements
+        const playBtn = document.getElementById('play');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const playIcon = document.getElementById('play-icon');
+        const audio = new Audio();
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const thumbnailEl = document.getElementById('thumbnail');
+        const songTitleEl = document.getElementById('song-title');
+        const songArtistEl = document.getElementById('song-artist');
+        const songDurationEl = document.getElementById('song-duration');
+        const playlistEl = document.getElementById('playlist');
+        const volumeSlider = document.getElementById('volume');
+        const uploadForm = document.getElementById('upload-form');
+        const sourceTypeSelect = document.getElementById('source-type');
+        const fileUploadGroup = document.getElementById('file-upload-group');
+        const urlUploadGroup = document.getElementById('url-upload-group');
+        const filegardenGroup = document.getElementById('filegarden-group');
+        const addSampleBtn = document.getElementById('add-sample-btn');
+        const successMessage = document.getElementById('success-message');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        
+        // State variables
+        let isPlaying = false;
+        let currentSongIndex = 0;
+        let songs = [];
+        
+        // Sample songs
+        const sampleSongs = [
+            {
+                title: "My Heart - Irwansyah",
+                artist: "Acha × Irwansyah",
+                duration: 269, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/ACHA%20SEPTRIASA%20%26%20IRWANSYAH%20-%20My%20Heart%20(Official%20Music%20Video)%20-%20Warner%20Music%20Indonesia.mp3",
+                description: "-",
+                creator: "Acha × Irwansyah",
+                reupload: "Adam (Owner)"
+            },
+            {
+                title: "Pemuja Rahasia - Sheila On 7",
+                artist: "Sheila On 7",
+                duration: 231, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/Sheila%20On%207%20%20Pemuja%20Rahasia%20(Lirik)%20-%20Musik%20Santai.mp3",
+                description: "-",
+                creator: "Sheila On 7",
+                reupload: "Adam (Owner)"
+            },
+            {
+                title: "Monolog - Pamungkas",
+                artist: "Pamungkas",
+                duration: 201, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/Pamungkas%20-%20Monolog%20(Lyrics%20Video)%20-%20Pamungkas.mp3",
+                description: "-",
+                creator: "Pamungkas",
+                reupload: "Adam (Owner)"
+            },
+            {
+                title: "Mosawo - Koiiro",
+                artist: "Koiiro",
+                duration: 290, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/Mosawo%20-%20Koiiro%20Lirik%20Terjemahan%20Indonesia%20__%20%E3%82%82%E3%81%95%E3%82%92%20-%20%E6%81%8B%E8%89%B2%20-%20Mari%20Nolep.mp3",
+                description: "-",
+                creator: "Koiiro",
+                reupload: "Adam (Owner)"
+            },
+            {
+                title: "Diam Tanpa Kata - D'MASIV",
+                artist: "D'MASIV",
+                duration: 233, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/D'MASIV%20-%20Diam%20Tanpa%20Kata%20(Official%20Music%20Video)%20-%20Musica%20Studios.mp3",
+                description: "-",
+                creator: "D'MASIV",
+                reupload: "Adam (Owner)"
+            },
+            {
+                title: "Aku Di Matamu - Armada Band",
+                artist: "Armada Band",
+                duration: 260, 
+                thumbnail: "https://file.garden/aJzMAjrHVB4BLKPo/IMG-20250913-WA0044.jpg",
+                audioSrc: "https://file.garden/aJzMAjrHVB4BLKPo/Armada%20Band%20-%20Aku%20Di%20Matamu%20%5B%20Official%20Lyrics%20Video%20%5D%20-%20Kupluxx%20Chanel%20(1).mp3",
+                description: "-",
+                creator: "Armada Band",
+                reupload: "Adam (Owner)"
+            }
+        ];
+        
+        // Format time (seconds to mm:ss)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+        
+        // Convert MM:SS to seconds
+        function timeToSeconds(minutes, seconds) {
+            return parseInt(minutes) * 60 + parseInt(seconds);
+        }
+        
+        // Initialize with sample songs
+        sampleSongs.forEach(song => addSongToPlaylist(song));
+        
+        // Update song info in player
+        function updateSongInfo() {
+            if (songs.length === 0) return;
+            
+            const currentSong = songs[currentSongIndex];
+            thumbnailEl.src = currentSong.thumbnail;
+            songTitleEl.textContent = currentSong.title;
+            songArtistEl.textContent = currentSong.artist;
+            songDurationEl.textContent = formatTime(currentSong.duration);
+            audio.src = currentSong.audioSrc;
+            
+            // Update active class in playlist
+            const playlistItems = playlistEl.querySelectorAll('.playlist-item');
+            playlistItems.forEach((item, index) => {
+                if (index === currentSongIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Play song
+        function playSong() {
+            if (songs.length === 0) return;
+            
+            isPlaying = true;
+            playIcon.classList.remove('fa-play');
+            playIcon.classList.add('fa-pause');
+            audio.play();
+        }
+        
+        // Pause song
+        function pauseSong() {
+            isPlaying = false;
+            playIcon.classList.remove('fa-pause');
+            playIcon.classList.add('fa-play');
+            audio.pause();
+        }
+        
+        // Next song
+        function nextSong() {
+            if (songs.length === 0) return;
+            
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            updateSongInfo();
+            if (isPlaying) playSong();
+        }
+        
+        // Previous song
+        function prevSong() {
+            if (songs.length === 0) return;
+            
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            updateSongInfo();
+            if (isPlaying) playSong();
+        }
+        
+        // Update progress bar
+        function updateProgress() {
+            if (songs.length === 0) return;
+            
+            const { currentTime, duration } = audio;
+            const progressPercent = (currentTime / duration) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            currentTimeEl.textContent = formatTime(currentTime);
+            durationEl.textContent = formatTime(duration);
+        }
+        
+        // Set progress on click
+        function setProgress(e) {
+            if (songs.length === 0) return;
+            
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+        
+        // Add song to playlist
+        function addSongToPlaylist(song) {
+            songs.push(song);
+            
+            const playlistItem = document.createElement('div');
+            playlistItem.classList.add('playlist-item');
+            playlistItem.innerHTML = `
+                <img src="${song.thumbnail}" alt="${song.title} cover" class="playlist-thumb">
+                <div class="playlist-info">
+                    <div class="playlist-title">${song.title}</div>
+                    <div class="playlist-artist">${song.artist}</div>
+                </div>
+                <div class="playlist-duration">${formatTime(song.duration)}</div>
+            `;
+            
+            playlistItem.addEventListener('click', () => {
+                currentSongIndex = songs.indexOf(song);
+                updateSongInfo();
+                playSong();
+            });
+            
+            playlistEl.appendChild(playlistItem);
+            
+            // If it's the first song, update player
+            if (songs.length === 1) {
+                updateSongInfo();
+            }
+        }
+        
+        // Show success message
+        function showSuccessMessage() {
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Handle form submission
+        function handleUpload(e) {
+            e.preventDefault();
+            
+            // Basic validation
+            let isValid = true;
+            
+            const title = document.getElementById('title').value;
+            const thumbnailFile = document.getElementById('thumbnail').files[0];
+            const minutes = minutesInput.value;
+            const seconds = secondsInput.value;
+            const description = document.getElementById('description').value;
+            const creator = document.getElementById('creator').value;
+            const reupload = document.getElementById('reupload').value;
+            const sourceType = document.getElementById('source-type').value;
+            const audioFile = document.getElementById('audio-file').files[0];
+            const audioUrl = document.getElementById('audio-url').value;
+            const filegardenUrl = document.getElementById('filegarden-url').value;
+            
+            // Reset errors
+            document.querySelectorAll('.error').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Validate required fields
+            if (!title) {
+                document.getElementById('title-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!thumbnailFile) {
+                document.getElementById('thumbnail-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if ((!minutes && minutes !== '0') || (!seconds && seconds !== '0')) {
+                document.getElementById('duration-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!description) {
+                document.getElementById('description-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!creator) {
+                document.getElementById('creator-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (sourceType === 'file' && !audioFile) {
+                document.getElementById('audio-file-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (sourceType === 'url' && !audioUrl) {
+                document.getElementById('audio-url-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (sourceType === 'filegarden' && !filegardenUrl) {
+                document.getElementById('filegarden-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Create object URL for thumbnail
+            const thumbnailUrl = URL.createObjectURL(thumbnailFile);
+            
+            // Create object URL for audio if file upload, or use URL
+            let audioSrc;
+            if (sourceType === 'file') {
+                audioSrc = URL.createObjectURL(audioFile);
+            } else if (sourceType === 'url') {
+                audioSrc = audioUrl;
+            } else {
+                audioSrc = filegardenUrl;
+            }
+            
+            // Convert MM:SS to seconds
+            const durationInSeconds = timeToSeconds(minutes, seconds);
+            
+            // Create new song object
+            const newSong = {
+                title,
+                artist: creator,
+                duration: durationInSeconds,
+                thumbnail: thumbnailUrl,
+                audioSrc,
+                description,
+                creator,
+                reupload
+            };
+            
+            // Add to playlist
+            addSongToPlaylist(newSong);
+            
+            // Reset form
+            uploadForm.reset();
+            minutesInput.value = 1;
+            secondsInput.value = 0;
+            
+            // Show success message
+            showSuccessMessage();
+        }
+        
+        // Handle source type change
+        function handleSourceTypeChange() {
+            const sourceType = sourceTypeSelect.value;
+            
+            // Hide all groups first
+            fileUploadGroup.style.display = 'none';
+            urlUploadGroup.style.display = 'none';
+            filegardenGroup.style.display = 'none';
+            
+            // Remove required attributes
+            document.getElementById('audio-file').required = false;
+            document.getElementById('audio-url').required = false;
+            document.getElementById('filegarden-url').required = false;
+            
+            // Show selected group and set required
+            if (sourceType === 'file') {
+                fileUploadGroup.style.display = 'block';
+                document.getElementById('audio-file').required = true;
+            } else if (sourceType === 'url') {
+                urlUploadGroup.style.display = 'block';
+                document.getElementById('audio-url').required = true;
+            } else {
+                filegardenGroup.style.display = 'block';
+                document.getElementById('filegarden-url').required = true;
+            }
+        }
+        
+        // Event listeners
+        playBtn.addEventListener('click', () => {
+            if (songs.length === 0) return;
+            isPlaying ? pauseSong() : playSong();
+        });
+        
+        prevBtn.addEventListener('click', prevSong);
+        nextBtn.addEventListener('click', nextSong);
+        
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', nextSong);
+        
+        progressContainer.addEventListener('click', setProgress);
+        
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value;
+        });
+        
+        uploadForm.addEventListener('submit', handleUpload);
+        
+        sourceTypeSelect.addEventListener('change', handleSourceTypeChange);
+        
+        addSampleBtn.addEventListener('click', () => {
+            const newSong = {
+                title: "Lagu Custom Baru",
+                artist: "Artist Custom",
+                duration: 125, // 2:05 in seconds
+                thumbnail: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/af725c69-e18b-4987-9382-3d60873039a2.png",
+                audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                description: "Ini adalah lagu yang ditambahkan melalui kode custom",
+                creator: "Custom Creator",
+                reupload: ""
+            };
+            
+            addSongToPlaylist(newSong);
+            showSuccessMessage();
+        });
+        
+        // Initialize volume
+        audio.volume = volumeSlider.value;
+        
+        // Initialize source type
+        handleSourceTypeChange();
+        
+        // Set up time inputs validation
+        minutesInput.addEventListener('input', () => {
+            if (minutesInput.value > 59) minutesInput.value = 59;
+            if (minutesInput.value < 0) minutesInput.value = 0;
+        });
+        
+        secondsInput.addEventListener('input', () => {
+            if (secondsInput.value > 59) secondsInput.value = 59;
+            if (secondsInput.value < 0) secondsInput.value = 0;
+        });
+    </script>
+</body>
+</html>
